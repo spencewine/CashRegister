@@ -1,4 +1,4 @@
-Hello! This is a CLI program. To use it save it, navigate to it in the terminal and NPM install. Afterwards, you can either enter "npm start" or "nodemon".
+Hello! This is a CLI program. I used Node.js to build it. Once you have cloned or forked the repository, navigate to it in the terminal and NPM install. Afterwards, you can either enter "npm start" or "nodemon" to start the program.
 
 The commands are:
 
