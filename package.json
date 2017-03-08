@@ -1,0 +1,33 @@
+{
+  "name": "cash-register",
+  "version": "1.0.0",
+  "bin": {
+    "cashregister": "index.js"
+  },
+  "description": "fastmodel challenge",
+  "main": "index.js",
+  "scripts": {
+    "start": "node_modules/nodemon/bin/nodemon.js ./index.js",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spencewine/CashRegister.git"
+  },
+  "author": "Spencer Goodwine",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/spencewine/CashRegister/issues"
+  },
+  "homepage": "https://github.com/spencewine/CashRegister#readme",
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "commander": "^2.9.0",
+    "nodemon": "^1.11.0",
+    "vorpal": "^1.11.4"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0"
+  }
+}
