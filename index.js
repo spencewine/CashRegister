@@ -28,57 +28,23 @@ const showReg = () => {
   return totalReg;
 };
 
-//Makes change for cash register and displays an error if not enough money is in the register or not the correct bills
-const changeBills = (amount) => {
-
-  let remainder = amount;
-
-  //if amount is greater than register and change can't be made, prints error and returns false
-  if (amount > showReg()) {
-    console.log('SORRY!');
+//returns an array of possible bills to deduct for change
+const changeBills = (amount, arr) => {
+  if (amount < 0) {
     return false;
   }
-  //checking if there are any $20s to make change
-  else if (remainder >= 20 && cashRegister[20] > 0) {
-    remainder -= 20;
-    cashRegister[20]--;
-    return changeBills(remainder);
-  }
-  //checking if there are any $10s to make change
-  else if (remainder >= 10 && cashRegister[10] > 0) {
-    remainder -= 10;
-    cashRegister[10]--;
-    return changeBills(remainder);
-  }
-  //checking if there are any $5s to make change
-  else if (remainder >= 5 && cashRegister[5] > 0) {
-    remainder -= 5;
-    cashRegister[5]--;
-    return changeBills(remainder);
-  }
-  //checking if there are any $2s to make change
-  else if (remainder >= 2 && cashRegister[2] > 0) {
-    remainder -= 2;
-    cashRegister[2]--;
-    return changeBills(remainder);
-  }
-  //checking if there are any $1s to make change
-  else if (remainder >= 1 && cashRegister[1] > 0) {
-    remainder -= 1;
-    cashRegister[1]--;
-    return changeBills(remainder);
-  }
-  //returning true if change can be made
-  else if (remainder === 0) {
-    return true;
-  }
-  //if change cannot be made with bills on hand, prints error and returns false
-  else {
-    console.log('SORRY!!');
-    return false;
-  }
+  if (amount === 0) { return []; }
 
+  arr = arr.slice();
+  while (arr.length) {
+    const value = arr.shift();
+    const possSolution = changeBills(amount - value, arr);
+    if (possSolution) {
+      return possSolution.concat(value);
+    }
+  }
 };
+
 
 //totalBills creates an object based on the arguments for add or take and returns that object.
 const totalBills = (arr, str) => {
@@ -135,7 +101,7 @@ const totalBills = (arr, str) => {
 let addArgs; //found a bug in the Vorpal Library (and opened an issue) that will not allow variadic arguments that start with 0, the "addArgs" variable is an ugly, but quick workaround;
 program
   .command('add [bills...]')
-  .description('run addBills to register')
+  .description('run add bills to register')
   .parse(function(command, args) {
     addArgs = args.split(' ');
     return command;
@@ -154,16 +120,22 @@ program
 let takeArgs; //found a bug in the Vorpal Library (and opened an issue) that will not allow variadic arguments that start with 0, the "takeArgs" is an ugly, but quick workaround;
 program
   .command('take [bills...]')
-  .description('run addBills to register')
+  .description('run take bills from register')
   .parse(function(command, args) {
     takeArgs = args.split(' ');
     return command;
   })
   .action(function(args, cb) {
+    const oldCashRegister = Object.assign({}, cashRegister);
     const removeBillsObj = totalBills(takeArgs, 'Taken');
 
     for (const bill in removeBillsObj) {
-      cashRegister[bill] -= removeBillsObj[bill];
+      if (cashRegister[bill] >= removeBillsObj[bill]) {
+        cashRegister[bill] -= removeBillsObj[bill];
+      } else {
+        console.log('Sorry! Not Enough Cash');
+        cashRegister = Object.assign({}, oldCashRegister);
+      }
     }
 
     showReg();
@@ -175,13 +147,24 @@ program
   .description('change bills in register')
   .action(function(args, cb) {
 
-    const oldCashRegister = Object.assign({}, cashRegister);
-    const bool = changeBills(args.amount);
-
-    if (bool === false) {
-      cashRegister = oldCashRegister;
+    const cashArr = [];
+    const copyCashRegister = Object.assign({}, cashRegister);
+    for (const bill in copyCashRegister) {
+      while (copyCashRegister[bill] > 0) {
+        cashArr.push(Number(bill));
+        copyCashRegister[bill]--;
+      }
     }
+    const cashAvailableArr = cashArr.filter(val => val <= args.amount).sort((small, large) => large - small);
 
+    const result = changeBills(args.amount, cashAvailableArr);
+    if (Array.isArray(result)) {
+      result.forEach(bill => {
+        cashRegister[bill]--;
+      });
+    } else {
+      console.log('SORRY!!!');
+    }
     showReg();
     cb();
   });
@@ -194,7 +177,7 @@ program
     cb();
   });
 
-//Entering q or Q quits the program by not invoking action's callback
+//Entering q quits the program by not invoking action's callback
 program
   .command('q')
   .description('Quit cash register')
